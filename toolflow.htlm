@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ToolFlow</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0c0f; --surface: #111418; --surface2: #181c22; --border: #1e242c;
+  --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14;
+  --warn: #ffcc00; --danger: #ff2d55; --text: #e8edf5; --muted: #5a6474; --card: #13171e;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Exo 2', sans-serif; }
+
+/* LOGIN */
+.tf-login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(–bg); }
+.tf-login-box { width: 100%; max-width: 400px; padding: 24px; }
+.tf-login-logo { font-family: ‘Rajdhani’, sans-serif; font-size: 36px; font-weight: 700; letter-spacing: 4px; color: var(–accent); text-transform: uppercase; text-align: center; margin-bottom: 4px; }
+.tf-login-logo span { color: var(–accent2); }
+.tf-login-sub { text-align: center; font-size: 12px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+.tf-login-card { background: var(–card); border: 1px solid var(–border); border-radius: 16px; padding: 32px; }
+.tf-login-title { font-family: ‘Rajdhani’, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(–text); margin-bottom: 24px; text-align: center; }
+.tf-login-error { background: rgba(255,45,85,0.1); border: 1px solid rgba(255,45,85,0.3); color: var(–danger); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; text-align: center; }
+
+/* APP */
+.tf-root { min-height: 100vh; display: flex; flex-direction: column; }
+.tf-topnav { background: var(–surface); border-bottom: 1px solid var(–border); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.tf-logo { font-family: ‘Rajdhani’, sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 3px; color: var(–accent); text-transform: uppercase; }
+.tf-logo span { color: var(–accent2); }
+.tf-nav-tabs { display: flex; gap: 4px; }
+.tf-nav-tab { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; color: var(–muted); font-family: ‘Exo 2’, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+.tf-nav-tab:hover { background: var(–surface2); color: var(–text); }
+.tf-nav-tab.active { background: var(–accent); color: #000; }
+.tf-user-area { display: flex; align-items: center; gap: 10px; }
+.tf-user-badge { font-family: ‘Share Tech Mono’, monospace; font-size: 12px; color: var(–accent3); background: rgba(57,255,20,0.08); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(57,255,20,0.2); }
+.tf-logout-btn { background: transparent; border: 1px solid var(–border); color: var(–muted); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: ‘Exo 2’, sans-serif; transition: all 0.2s; }
+.tf-logout-btn:hover { border-color: var(–danger); color: var(–danger); }
+.tf-main { flex: 1; padding: 24px 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+.tf-section-title { font-family: ‘Rajdhani’, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.tf-section-title span { color: var(–accent); }
+.tf-section-sub { font-size: 13px; color: var(–muted); margin-top: 4px; }
+.tf-section-header { margin-bottom: 24px; }
+.tf-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tf-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.tf-card { background: var(–card); border: 1px solid var(–border); border-radius: 12px; padding: 20px; }
+.tf-card-title { font-family: ‘Rajdhani’, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); margin-bottom: 16px; }
+.tf-stat-card { background: var(–card); border: 1px solid var(–border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+.tf-stat-card::before { content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.tf-stat-card.cyan::before { background: var(–accent); }
+.tf-stat-card.orange::before { background: var(–accent2); }
+.tf-stat-card.green::before { background: var(–accent3); }
+.tf-stat-card.warn::before { background: var(–warn); }
+.tf-stat-card.danger::before { background: var(–danger); }
+.tf-stat-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); margin-bottom: 8px; }
+.tf-stat-value { font-family: ‘Share Tech Mono’, monospace; font-size: 32px; line-height: 1; }
+.tf-stat-value.cyan { color: var(–accent); } .tf-stat-value.orange { color: var(–accent2); }
+.tf-stat-value.green { color: var(–accent3); } .tf-stat-value.warn { color: var(–warn); } .tf-stat-value.danger { color: var(–danger); }
+.tf-stat-sub { font-size: 11px; color: var(–muted); margin-top: 6px; }
+.tf-form-group { margin-bottom: 16px; }
+.tf-form-label { display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); margin-bottom: 6px; font-weight: 600; }
+.tf-input, .tf-select, .tf-textarea { width: 100%; background: var(–surface2); border: 1px solid var(–border); border-radius: 8px; padding: 10px 14px; color: var(–text); font-family: ‘Exo 2’, sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.tf-input:focus, .tf-select:focus, .tf-textarea:focus { border-color: var(–accent); }
+.tf-select option { background: var(–surface2); }
+.tf-textarea { resize: vertical; min-height: 80px; }
+.tf-btn { padding: 10px 20px; border-radius: 8px; border: none; font-family: ‘Rajdhani’, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+.tf-btn.primary { background: var(–accent); color: #000; }
+.tf-btn.primary:hover { background: #33eeff; transform: translateY(-1px); }
+.tf-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.tf-btn.danger { background: var(–danger); color: #fff; }
+.tf-btn.warn { background: var(–warn); color: #000; }
+.tf-btn.ghost { background: transparent; border: 1px solid var(–border); color: var(–muted); }
+.tf-btn.ghost:hover { border-color: var(–accent); color: var(–accent); }
+.tf-btn.full { width: 100%; }
+.tf-btn.sm { padding: 6px 12px; font-size: 12px; }
+.tf-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: ‘Share Tech Mono’, monospace; }
+.tf-badge.cyan { background: rgba(0,229,255,0.15); color: var(–accent); border: 1px solid rgba(0,229,255,0.3); }
+.tf-badge.green { background: rgba(57,255,20,0.12); color: var(–accent3); border: 1px solid rgba(57,255,20,0.25); }
+.tf-badge.orange { background: rgba(255,107,53,0.15); color: var(–accent2); border: 1px solid rgba(255,107,53,0.3); }
+.tf-badge.red { background: rgba(255,45,85,0.15); color: var(–danger); border: 1px solid rgba(255,45,85,0.3); }
+.tf-badge.warn { background: rgba(255,204,0,0.15); color: var(–warn); border: 1px solid rgba(255,204,0,0.3); }
+.tf-badge.muted { background: rgba(90,100,116,0.2); color: var(–muted); border: 1px solid var(–border); }
+.tf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tf-table th { text-align: left; padding: 10px 14px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); border-bottom: 1px solid var(–border); font-weight: 600; }
+.tf-table td { padding: 12px 14px; border-bottom: 1px solid rgba(30,36,44,0.6); }
+.tf-table tr:hover td { background: rgba(255,255,255,0.02); }
+.tf-mono { font-family: ‘Share Tech Mono’, monospace; }
+.tf-turret-block { flex: 1; min-width: 200px; background: var(–surface2); border: 1px solid var(–border); border-radius: 10px; padding: 16px; }
+.tf-turret-label { font-family: ‘Rajdhani’, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(–accent); margin-bottom: 12px; text-align: center; }
+.tf-turret-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.tf-slot { aspect-ratio: 1; border-radius: 6px; border: 1px solid var(–border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-family: ‘Share Tech Mono’, monospace; cursor: pointer; transition: all 0.15s; padding: 4px; text-align: center; line-height: 1.2; }
+.tf-slot:hover { transform: scale(1.08); z-index: 2; position: relative; }
+.tf-slot.occupied { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.3); color: var(–accent); }
+.tf-slot.worn { background: rgba(255,204,0,0.1); border-color: rgba(255,204,0,0.3); color: var(–warn); }
+.tf-slot.empty { background: rgba(90,100,116,0.05); border-color: var(–border); color: var(–border); }
+.tf-slot.broken { background: rgba(255,45,85,0.1); border-color: rgba(255,45,85,0.3); color: var(–danger); }
+.tf-slot-num { font-size: 8px; color: var(–muted); margin-bottom: 2px; }
+.tf-alert { border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.tf-alert.warn { background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.3); color: var(–warn); }
+.tf-success-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; }
+.tf-success-icon { width: 72px; height: 72px; border-radius: 50%; background: rgba(57,255,20,0.15); border: 2px solid var(–accent3); display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; }
+.tf-success-title { font-family: ‘Rajdhani’, sans-serif; font-size: 24px; font-weight: 700; color: var(–accent3); margin-bottom: 8px; letter-spacing: 2px; }
+.tf-success-sub { color: var(–muted); font-size: 14px; }
+.tf-progress-bar { height: 4px; background: var(–border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.tf-progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.tf-search-bar { display: flex; align-items: center; gap: 10px; background: var(–surface2); border: 1px solid var(–border); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+.tf-search-bar input { background: none; border: none; outline: none; color: var(–text); font-family: ‘Exo 2’, sans-serif; font-size: 14px; flex: 1; }
+@media (max-width: 768px) {
+.tf-grid4 { grid-template-columns: repeat(2, 1fr); }
+.tf-grid2 { grid-template-columns: 1fr; }
+.tf-nav-tab { padding: 6px 8px; font-size: 11px; }
+.tf-logo { font-size: 18px; }
+.tf-user-badge { display: none; }
+}
+</style>
+
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const MACHINES = [“CNC-01”,“CNC-02”,“CNC-03”,“CNC-05”,“CNC-07”,“CNC-11”,“CNC-14”,“CNC-18”,“CNC-22”,“LATHE-03”,“LATHE-07”,“MILL-02”];
+const DEPARTMENTS = [“Turning”,“Milling”,“Grinding”,“Assembly”,“Inspection”];
+const TOOL_TYPES = [“End Mill”,“Drill”,“Tap”,“Insert”,“Boring Bar”,“Reamer”,“Face Mill”,“Thread Mill”];
+
+const INITIAL_REPORTS = [
+{ id:1, toolId:“EM-0.500-4FL”, type:“End Mill”, machine:“CNC-07”, dept:“Milling”, reason:“broken”, notes:“Hit a hard spot on material”, operator:“J. Martinez”, badge:“1042”, date:“2024-01-15 08:32”, cost:48.50 },
+{ id:2, toolId:“DR-0.375-HSS”, type:“Drill”, machine:“CNC-14”, dept:“Turning”, reason:“worn”, notes:“Exceeded life cycle”, operator:“R. Lopez”, badge:“2087”, date:“2024-01-15 10:15”, cost:22.00 },
+{ id:3, toolId:“TAP-1/4-20”, type:“Tap”, machine:“LATHE-03”, dept:“Turning”, reason:“broken”, notes:“Broke in part, need extraction”, operator:“M. Garcia”, badge:“3301”, date:“2024-01-15 11:44”, cost:31.75 },
+{ id:4, toolId:“INS-CNMG-432”, type:“Insert”, machine:“LATHE-07”, dept:“Turning”, reason:“worn”, notes:“Chipping on edge”, operator:“A. Reyes”, badge:“1198”, date:“2024-01-14 14:20”, cost:12.40 },
+{ id:5, toolId:“EM-0.250-2FL”, type:“End Mill”, machine:“MILL-02”, dept:“Milling”, reason:“lost”, notes:“Cannot locate after setup change”, operator:“C. Torres”, badge:“2255”, date:“2024-01-14 16:05”, cost:34.20 },
+];
+
+const TURRET_DATA = {
+“T1”:[
+{pos:1,tool:“EM-0.500”,status:“occupied”},{pos:2,tool:“DR-0.375”,status:“worn”},
+{pos:3,tool:””,status:“empty”},{pos:4,tool:“TAP-1/4”,status:“occupied”},
+{pos:5,tool:“EM-0.250”,status:“occupied”},{pos:6,tool:””,status:“empty”},
+{pos:7,tool:“BOR-1.0”,status:“occupied”},{pos:8,tool:“DR-0.500”,status:“broken”},
+{pos:9,tool:””,status:“empty”},{pos:10,tool:“EM-0.750”,status:“worn”},
+{pos:11,tool:””,status:“empty”},{pos:12,tool:“INS-432”,status:“occupied”},
+],
+“T2”:[
+{pos:1,tool:“FM-3.0”,status:“occupied”},{pos:2,tool:””,status:“empty”},
+{pos:3,tool:“DR-0.250”,status:“occupied”},{pos:4,tool:””,status:“empty”},
+{pos:5,tool:“TAP-3/8”,status:“occupied”},{pos:6,tool:“EM-0.375”,status:“worn”},
+{pos:7,tool:””,status:“empty”},{pos:8,tool:“REM-0.5”,status:“occupied”},
+{pos:9,tool:“DR-0.125”,status:“occupied”},{pos:10,tool:””,status:“empty”},
+{pos:11,tool:“INS-221”,status:“worn”},{pos:12,tool:””,status:“empty”},
+],
+“T3”:[
+{pos:1,tool:“EM-1.000”,status:“occupied”},{pos:2,tool:“DR-0.750”,status:“occupied”},
+{pos:3,tool:“TAP-1/2”,status:“occupied”},{pos:4,tool:””,status:“empty”},
+{pos:5,tool:””,status:“empty”},{pos:6,tool:“BOR-2.0”,status:“occupied”},
+{pos:7,tool:“DR-0.625”,status:“worn”},{pos:8,tool:””,status:“empty”},
+{pos:9,tool:“EM-0.125”,status:“occupied”},{pos:10,tool:“INS-432”,status:“occupied”},
+{pos:11,tool:””,status:“empty”},{pos:12,tool:“TAP-5/16”,status:“broken”},
+],
+};
+
+// ── SESSION HELPERS ──────────────────────────────────────────────────────────
+function saveSession(user) { sessionStorage.setItem(“tf_user”, JSON.stringify(user)); }
+function loadSession() {
+try { return JSON.parse(sessionStorage.getItem(“tf_user”)); } catch { return null; }
+}
+function clearSession() { sessionStorage.removeItem(“tf_user”); }
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }) {
+const [name, setName] = useState(””);
+const [badge, setBadge] = useState(””);
+const [error, setError] = useState(””);
+
+const handleSubmit = () => {
+const trimName = name.trim();
+const trimBadge = badge.trim();
+if (!trimName) { setError(“Please enter your name.”); return; }
+if (!trimBadge || !/^\d+$/.test(trimBadge)) { setError(“Badge number must be numeric.”); return; }
+const user = { name: trimName, badge: trimBadge };
+saveSession(user);
+onLogin(user);
+};
+
+const handleKey = e => { if (e.key === “Enter”) handleSubmit(); };
+
+return (
+<div className="tf-login-wrap">
+<div className="tf-login-box">
+<div className="tf-login-logo">TOOL<span>FLOW</span></div>
+<div className="tf-login-sub">Shop Floor Tool Management</div>
+<div className="tf-login-card">
+<div className="tf-login-title">Sign In</div>
+{error && <div className="tf-login-error">{error}</div>}
+<div className="tf-form-group">
+<label className="tf-form-label">Full Name</label>
+<input className=“tf-input” placeholder=“e.g. John Martinez” value={name} onChange={e=>{setName(e.target.value); setError(””);}} onKeyDown={handleKey} />
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Badge Number</label>
+<input className=“tf-input” placeholder=“e.g. 1042” value={badge} onChange={e=>{setBadge(e.target.value); setError(””);}} onKeyDown={handleKey} />
+</div>
+<button className="tf-btn primary full" style={{marginTop:8}} onClick={handleSubmit} disabled={!name.trim()||!badge.trim()}>
+Enter Shop Floor
+</button>
+</div>
+</div>
+</div>
+);
+}
+
+// ── BADGES ───────────────────────────────────────────────────────────────────
+function ReasonBadge({reason}) {
+if (reason===“broken”) return <span className="tf-badge red">BROKEN</span>;
+if (reason===“worn”)   return <span className="tf-badge warn">WORN</span>;
+if (reason===“lost”)   return <span className="tf-badge orange">LOST</span>;
+if (reason===“return”) return <span className="tf-badge green">RETURNED</span>;
+return null;
+}
+
+// ── OPERATOR VIEW ────────────────────────────────────────────────────────────
+function OperatorView({onAddReport, user}) {
+const [step, setStep] = useState(1);
+const [action, setAction] = useState(””);
+const emptyForm = {toolId:””,toolType:””,machine:””,dept:””,notes:””,turret:””,position:””};
+const [form, setForm] = useState(emptyForm);
+const set = k => e => setForm(f=>({…f,[k]:e.target.value}));
+
+const handleSubmit = () => {
+onAddReport({
+id: Date.now(),
+toolId: form.toolId,
+type: form.toolType || “—”,
+machine: form.machine,
+dept: form.dept || “—”,
+reason: action,
+notes: form.notes,
+operator: user.name,
+badge: user.badge,
+date: new Date().toISOString().slice(0,16).replace(“T”,” “),
+cost: action===“broken”?45.00:action===“worn”?20.00:action===“lost”?35.00:0,
+});
+setStep(3);
+};
+const handleReset = () => { setStep(1); setAction(””); setForm(emptyForm); };
+
+if (step===3) return (
+<div className="tf-card">
+<div className="tf-success-screen">
+<div className="tf-success-icon">✓</div>
+<div className="tf-success-title">REPORT SUBMITTED</div>
+<div className="tf-success-sub">Tool Crib has been notified · Record saved</div>
+<div style={{marginTop:28,display:“flex”,gap:12}}>
+<button className="tf-btn ghost" onClick={handleReset}>New Report</button>
+<button className="tf-btn primary" onClick={handleReset}>Done</button>
+</div>
+</div>
+</div>
+);
+
+if (step===1) return (
+<div>
+<div className="tf-section-header">
+<div className="tf-section-title">QUICK <span>REPORT</span></div>
+<div className="tf-section-sub">What happened to the tool?</div>
+</div>
+<div className="tf-grid2" style={{gap:12}}>
+{[
+{key:“broken”,icon:“💥”,label:“Broken”,sub:“Tool broke, needs replacement”,color:“var(–danger)”},
+{key:“worn”,icon:“🔧”,label:“Worn Out”,sub:“Reached end of tool life”,color:“var(–warn)”},
+{key:“lost”,icon:“🔍”,label:“Can’t Find It”,sub:“Lost tool, search required”,color:“var(–accent2)”},
+{key:“return”,icon:“↩️”,label:“Return to Crib”,sub:“Return tool to inventory”,color:“var(–accent3)”},
+].map(a=>(
+<div key={a.key} className=“tf-card” style={{cursor:“pointer”,borderColor:“transparent”,transition:“all 0.2s”}}
+onClick={()=>{setAction(a.key);setStep(2);}}
+onMouseEnter={e=>e.currentTarget.style.borderColor=a.color}
+onMouseLeave={e=>e.currentTarget.style.borderColor=“transparent”}>
+<div style={{fontSize:32,marginBottom:10}}>{a.icon}</div>
+<div style={{fontFamily:”‘Rajdhani’,sans-serif”,fontSize:18,fontWeight:700,marginBottom:4,color:a.color}}>{a.label}</div>
+<div style={{fontSize:12,color:“var(–muted)”}}>{a.sub}</div>
+</div>
+))}
+</div>
+</div>
+);
+
+const labels = {broken:“Broken Tool 💥”,worn:“Worn Tool 🔧”,lost:“Lost Tool 🔍”,return:“Return Tool ↩️”};
+return (
+<div>
+<div className=“tf-section-header” style={{display:“flex”,alignItems:“center”,gap:12}}>
+<button className=“tf-btn ghost sm” onClick={()=>setStep(1)}>← Back</button>
+<div>
+<div className="tf-section-title"><span>{labels[action]}</span></div>
+<div className="tf-section-sub">Fill in the details — under 1 minute</div>
+</div>
+</div>
+<div className="tf-card">
+<div className="tf-grid2">
+<div className="tf-form-group">
+<label className="tf-form-label">Tool ID / Number</label>
+<input className=“tf-input” placeholder=“e.g. EM-0.500-4FL” value={form.toolId} onChange={set(“toolId”)} />
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Tool Type</label>
+<select className=“tf-select” value={form.toolType} onChange={set(“toolType”)}>
+<option value="">Select…</option>
+{TOOL_TYPES.map(t=><option key={t}>{t}</option>)}
+</select>
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Machine</label>
+<select className=“tf-select” value={form.machine} onChange={set(“machine”)}>
+<option value="">Select…</option>
+{MACHINES.map(m=><option key={m}>{m}</option>)}
+</select>
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Department</label>
+<select className=“tf-select” value={form.dept} onChange={set(“dept”)}>
+<option value="">Select…</option>
+{DEPARTMENTS.map(d=><option key={d}>{d}</option>)}
+</select>
+</div>
+{(action===“broken”||action===“worn”)&&(<>
+<div className="tf-form-group">
+<label className="tf-form-label">Turret</label>
+<select className=“tf-select” value={form.turret} onChange={set(“turret”)}>
+<option value="">Select…</option>
+<option>T1</option><option>T2</option><option>T3</option>
+</select>
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Turret Position</label>
+<input className=“tf-input” placeholder=“e.g. 8” value={form.position} onChange={set(“position”)} />
+</div>
+</>)}
+</div>
+<div className="tf-form-group">
+<label className="tf-form-label">Notes (optional)</label>
+<textarea className=“tf-textarea” placeholder=“Briefly describe what happened…” value={form.notes} onChange={set(“notes”)} />
+</div>
+<button className="tf-btn primary full" onClick={handleSubmit} disabled={!form.toolId.trim()||!form.machine}>
+Submit Report
+</button>
+</div>
+</div>
+);
+}
+
+// ── CRIB VIEW ────────────────────────────────────────────────────────────────
+function CribView({reports}) {
+const [search, setSearch] = useState(””);
+const [filter, setFilter] = useState(“all”);
+const filtered = reports.filter(r=>{
+const q=search.toLowerCase();
+return (r.toolId.toLowerCase().includes(q)||r.machine.toLowerCase().includes(q)||r.operator.toLowerCase().includes(q)||r.badge.includes(q))
+&&(filter===“all”||r.reason===filter);
+});
+const totalCost = reports.reduce((s,r)=>s+r.cost,0);
+
+return (
+<div>
+<div className=“tf-section-header” style={{display:“flex”,justifyContent:“space-between”,alignItems:“flex-start”}}>
+<div>
+<div className="tf-section-title">TOOL CRIB <span>DASHBOARD</span></div>
+<div className="tf-section-sub">Live reports from the shop floor</div>
+</div>
+<div style={{textAlign:“right”}}>
+<div style={{fontFamily:”‘Share Tech Mono’”,fontSize:11,color:“var(–muted)”,letterSpacing:2}}>TODAY’S LOSS</div>
+<div style={{fontFamily:”‘Share Tech Mono’”,fontSize:24,color:“var(–danger)”}}>${totalCost.toFixed(2)}</div>
+</div>
+</div>
+<div className="tf-alert warn">⚠ 2 broken tools without replacement ordered · TAP-1/4-20 on LATHE-03 requires extraction</div>
+<div style={{display:“flex”,gap:8,marginBottom:16,flexWrap:“wrap”}}>
+{[{k:“all”,l:“All”},{k:“broken”,l:“Broken”},{k:“worn”,l:“Worn”},{k:“lost”,l:“Lost”},{k:“return”,l:“Returned”}].map(f=>(
+<button key={f.k} className={“tf-btn sm “+(filter===f.k?“primary”:“ghost”)} onClick={()=>setFilter(f.k)}>{f.l}</button>
+))}
+</div>
+<div className="tf-search-bar">
+<span style={{color:“var(–muted)”}}>🔎</span>
+<input placeholder=“Search by tool ID, machine, operator or badge…” value={search} onChange={e=>setSearch(e.target.value)} />
+</div>
+<div className=“tf-card” style={{padding:0,overflow:“hidden”}}>
+<table className="tf-table">
+<thead><tr><th>Tool ID</th><th>Type</th><th>Status</th><th>Machine</th><th>Operator</th><th>Badge</th><th>Cost</th><th>Time</th><th>Action</th></tr></thead>
+<tbody>
+{filtered.map(r=>(
+<tr key={r.id}>
+<td className=“tf-mono” style={{color:“var(–accent)”,fontSize:12}}>{r.toolId}</td>
+<td style={{color:“var(–muted)”,fontSize:12}}>{r.type}</td>
+<td><ReasonBadge reason={r.reason}/></td>
+<td className="tf-mono" style={{fontSize:12}}>{r.machine}</td>
+<td style={{fontSize:12}}>{r.operator}</td>
+<td className=“tf-mono” style={{fontSize:12,color:“var(–muted)”}}>{r.badge}</td>
+<td className=“tf-mono” style={{color:r.reason===“return”?“var(–accent3)”:“var(–danger)”,fontSize:13}}>${r.cost.toFixed(2)}</td>
+<td style={{fontSize:11,color:“var(–muted)”}}>{r.date.split(” “)[1]}</td>
+<td><button className="tf-btn ghost sm">Attend</button></td>
+</tr>
+))}
+</tbody>
+</table>
+{filtered.length===0&&<div style={{padding:32,textAlign:“center”,color:“var(–muted)”,fontSize:13}}>No reports match that filter</div>}
+</div>
+</div>
+);
+}
+
+// ── MACHINE VIEW ─────────────────────────────────────────────────────────────
+function MachineView() {
+const [selectedMachine, setSelectedMachine] = useState(“CNC-07”);
+const [selectedSlot, setSelectedSlot] = useState(null);
+const statusLabel = {occupied:“IN USE”,worn:“WORN”,empty:“EMPTY”,broken:“BROKEN”};
+const statusColor = {occupied:“var(–accent)”,worn:“var(–warn)”,empty:“var(–muted)”,broken:“var(–danger)”};
+const allTools = Object.values(TURRET_DATA).flat().filter(s=>s.status!==“empty”);
+
+return (
+<div>
+<div className="tf-section-header">
+<div className="tf-section-title">MACHINE <span>INVENTORY</span></div>
+<div className="tf-section-sub">Live tool map by turret</div>
+</div>
+<div className="tf-grid4" style={{marginBottom:20}}>
+<div className="tf-stat-card cyan"><div className="tf-stat-label">Active Tools</div><div className="tf-stat-value cyan">{allTools.filter(s=>s.status===“occupied”).length}</div><div className="tf-stat-sub">in turrets now</div></div>
+<div className="tf-stat-card warn"><div className="tf-stat-label">Worn</div><div className="tf-stat-value warn">{allTools.filter(s=>s.status===“worn”).length}</div><div className="tf-stat-sub">check soon</div></div>
+<div className="tf-stat-card danger"><div className="tf-stat-label">Broken</div><div className="tf-stat-value danger">{allTools.filter(s=>s.status===“broken”).length}</div><div className="tf-stat-sub">need attention</div></div>
+<div className="tf-stat-card green"><div className="tf-stat-label">Empty Slots</div><div className="tf-stat-value green">{36-allTools.length}</div><div className="tf-stat-sub">available</div></div>
+</div>
+<div style={{display:“flex”,gap:8,marginBottom:20,flexWrap:“wrap”}}>
+{MACHINES.map(m=>(
+<button key={m} className={“tf-btn sm “+(selectedMachine===m?“primary”:“ghost”)} onClick={()=>setSelectedMachine(m)}>{m}</button>
+))}
+</div>
+<div className="tf-card">
+<div style={{display:“flex”,justifyContent:“space-between”,alignItems:“center”,marginBottom:16}}>
+<div style={{fontFamily:”‘Rajdhani’,sans-serif”,fontSize:20,fontWeight:700,letterSpacing:2,color:“var(–accent)”}}>{selectedMachine}</div>
+<div style={{display:“flex”,gap:8,flexWrap:“wrap”}}>
+<span className="tf-badge cyan">● IN USE</span>
+<span className="tf-badge warn">● WORN</span>
+<span className="tf-badge red">● BROKEN</span>
+<span className="tf-badge muted">○ EMPTY</span>
+</div>
+</div>
+<div style={{display:“flex”,gap:16,flexWrap:“wrap”}}>
+{Object.entries(TURRET_DATA).map(([turret,slots])=>(
+<div key={turret} className="tf-turret-block">
+<div className="tf-turret-label">TURRET {turret}</div>
+<div className="tf-turret-grid">
+{slots.map(slot=>(
+<div key={slot.pos} className={“tf-slot “+slot.status}
+onClick={()=>setSelectedSlot(selectedSlot?.pos===slot.pos&&selectedSlot?.turret===turret?null:{…slot,turret})}>
+<span className="tf-slot-num">P{slot.pos}</span>
+{slot.tool||”—”}
+</div>
+))}
+</div>
+</div>
+))}
+</div>
+{selectedSlot&&(
+<div style={{marginTop:20,padding:16,background:“var(–surface2)”,borderRadius:8,border:“1px solid var(–border)”}}>
+<div style={{display:“flex”,justifyContent:“space-between”,alignItems:“center”,marginBottom:12}}>
+<div style={{fontFamily:”‘Rajdhani’,sans-serif”,fontSize:16,fontWeight:700,letterSpacing:1}}>
+{selectedMachine} · Turret {selectedSlot.turret} · Position {selectedSlot.pos}
+</div>
+<span className={“tf-badge “+(selectedSlot.status===“occupied”?“cyan”:selectedSlot.status===“worn”?“warn”:selectedSlot.status===“broken”?“red”:“muted”)}>
+{statusLabel[selectedSlot.status]}
+</span>
+</div>
+{selectedSlot.status!==“empty”&&(
+<div style={{fontFamily:”‘Share Tech Mono’”,fontSize:14,color:statusColor[selectedSlot.status],marginBottom:12}}>{selectedSlot.tool}</div>
+)}
+<div style={{display:“flex”,gap:8,flexWrap:“wrap”}}>
+<button className="tf-btn ghost sm">View History</button>
+{selectedSlot.status===“worn”&&<button className="tf-btn warn sm">Mark for Change</button>}
+{selectedSlot.status===“broken”&&<button className="tf-btn danger sm">Report Broken</button>}
+{selectedSlot.status!==“empty”&&<button className="tf-btn ghost sm">Remove Tool</button>}
+</div>
+</div>
+)}
+</div>
+</div>
+);
+}
+
+// ── ANALYTICS VIEW ───────────────────────────────────────────────────────────
+function AnalyticsView() {
+const weekData = [{day:“Mon”,cost:142},{day:“Tue”,cost:89},{day:“Wed”,cost:210},{day:“Thu”,cost:175},{day:“Fri”,cost:320},{day:“Sat”,cost:95}];
+const maxCost = Math.max(…weekData.map(d=>d.cost));
+const byMachine = [{machine:“LATHE-07”,cost:248.50,pct:82},{machine:“CNC-14”,cost:196.20,pct:65},{machine:“CNC-07”,cost:167.80,pct:55},{machine:“MILL-02”,cost:134.10,pct:44},{machine:“CNC-01”,cost:98.40,pct:32}];
+const byType = [{type:“End Mill”,count:18,cost:412.80,pct:75},{type:“Tap”,count:12,cost:287.40,pct:52},{type:“Drill”,count:9,cost:198.00,pct:36},{type:“Insert”,count:22,cost:176.80,pct:32},{type:“Boring Bar”,count:4,cost:124.40,pct:22}];
+
+return (
+<div>
+<div className=“tf-section-header” style={{display:“flex”,justifyContent:“space-between”,alignItems:“flex-start”}}>
+<div>
+<div className="tf-section-title">ANALYTICS <span>& COSTS</span></div>
+<div className="tf-section-sub">Tool loss · January 2024</div>
+</div>
+<div style={{display:“flex”,gap:8}}>
+{[“Week”,“Month”,“Quarter”].map(p=>(
+<button key={p} className={“tf-btn sm “+(p===“Week”?“primary”:“ghost”)}>{p}</button>
+))}
+</div>
+</div>
+<div className="tf-grid4" style={{marginBottom:20}}>
+<div className="tf-stat-card danger"><div className="tf-stat-label">Loss This Week</div><div className="tf-stat-value danger">$1,031</div><div className="tf-stat-sub">↑ 18% vs last week</div></div>
+<div className="tf-stat-card orange"><div className="tf-stat-label">Tools Reported</div><div className="tf-stat-value orange">58</div><div className="tf-stat-sub">broken + worn</div></div>
+<div className="tf-stat-card warn"><div className="tf-stat-label">Tools Lost</div><div className="tf-stat-value warn">7</div><div className="tf-stat-sub">unaccounted</div></div>
+<div className="tf-stat-card cyan"><div className="tf-stat-label">Estimated Savings</div><div className="tf-stat-value cyan">$340</div><div className="tf-stat-sub">vs. month without system</div></div>
+</div>
+<div className="tf-grid2" style={{marginBottom:16}}>
+<div className="tf-card">
+<div className="tf-card-title">Tool Loss Cost — This Week</div>
+<div style={{display:“flex”,alignItems:“flex-end”,gap:8,height:120}}>
+{weekData.map(d=>(
+<div key={d.day} style={{flex:1,display:“flex”,flexDirection:“column”,alignItems:“center”,gap:4}}>
+<div style={{fontSize:9,color:“var(–muted)”,fontFamily:”‘Share Tech Mono’”}}>${d.cost}</div>
+<div style={{width:“100%”,height:`${(d.cost/maxCost)*90}px`,background:d.day===“Fri”?“var(–danger)”:“rgba(0,229,255,0.3)”,borderRadius:“4px 4px 0 0”,border:“1px solid rgba(0,229,255,0.2)”,minHeight:4}} />
+<div style={{fontSize:10,color:“var(–muted)”}}>{d.day}</div>
+</div>
+))}
+</div>
+</div>
+<div className="tf-card">
+<div className="tf-card-title">Top Machines by Cost</div>
+{byMachine.map(m=>(
+<div key={m.machine} style={{marginBottom:12}}>
+<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:4}}>
+<span className=“tf-mono” style={{fontSize:12,color:“var(–accent)”}}>{m.machine}</span>
+<span className=“tf-mono” style={{fontSize:12,color:“var(–danger)”}}>${m.cost.toFixed(0)}</span>
+</div>
+<div className="tf-progress-bar"><div className=“tf-progress-fill” style={{width:`${m.pct}%`,background:“var(–accent2)”}} /></div>
+</div>
+))}
+</div>
+</div>
+<div className="tf-card">
+<div className="tf-card-title">Loss by Tool Type</div>
+<table className="tf-table">
+<thead><tr><th>Type</th><th>Qty Reported</th><th>Total Cost</th><th>% of Total</th><th>Distribution</th></tr></thead>
+<tbody>
+{byType.map(t=>(
+<tr key={t.type}>
+<td style={{fontWeight:600}}>{t.type}</td>
+<td className=“tf-mono” style={{color:“var(–accent)”}}>{t.count}</td>
+<td className=“tf-mono” style={{color:“var(–danger)”}}>${t.cost.toFixed(2)}</td>
+<td className=“tf-mono” style={{color:“var(–muted)”}}>{Math.round(t.cost/1199*100)}%</td>
+<td style={{width:140}}><div className="tf-progress-bar" style={{marginTop:0}}><div className=“tf-progress-fill” style={{width:`${t.pct}%`,background:“var(–accent)”}} /></div></td>
+</tr>
+))}
+</tbody>
+</table>
+</div>
+</div>
+);
+}
+
+// ── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+const [user, setUser] = useState(() => loadSession());
+const [tab, setTab] = useState(“operator”);
+const [reports, setReports] = useState(INITIAL_REPORTS);
+
+const handleLogin = u => setUser(u);
+const handleLogout = () => { clearSession(); setUser(null); setTab(“operator”); };
+const addReport = r => setReports(prev=>[r,…prev]);
+
+if (!user) return <LoginScreen onLogin={handleLogin} />;
+
+const tabs = [{key:“operator”,label:“📱 Operator”},{key:“crib”,label:“🔧 Tool Crib”},{key:“machine”,label:“⚙️ Machines”},{key:“analytics”,label:“📊 Analytics”}];
+
+return (
+<div className="tf-root">
+<nav className="tf-topnav">
+<div className="tf-logo">TOOL<span>FLOW</span></div>
+<div className="tf-nav-tabs">
+{tabs.map(t=>(
+<button key={t.key} className={“tf-nav-tab “+(tab===t.key?“active”:””)} onClick={()=>setTab(t.key)}>{t.label}</button>
+))}
+</div>
+<div className="tf-user-area">
+<div className="tf-user-badge">{user.name.toUpperCase()} · #{user.badge}</div>
+<button className="tf-logout-btn" onClick={handleLogout}>Sign Out</button>
+</div>
+</nav>
+<main className="tf-main">
+{tab===“operator”  && <OperatorView onAddReport={addReport} user={user}/>}
+{tab===“crib”      && <CribView reports={reports}/>}
+{tab===“machine”   && <MachineView/>}
+{tab===“analytics” && <AnalyticsView/>}
+</main>
+</div>
+);
+}
+ReactDOM.createRoot(document.getElementById(“root”)).render(<App/>);
+</script>
+</body>
+</html>
